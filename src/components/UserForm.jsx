@@ -15,13 +15,9 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
-<<<<<<< HEAD
-import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css"; // Import PhoneInput CSS
 import ImageUpload from "./ImageUpload";
-=======
 import "react-phone-input-2/lib/style.css";
->>>>>>> e0c3a95ccd1cf79c57bce3f9d3cabd893709f8e6
 const validationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
 	email: Yup.string().email("Invalid email format").required("Required!"),
@@ -68,23 +64,10 @@ const UserForm = ({ users, id }) => {
 
 	const onSubmit = (values) => {
 		if (id) {
-<<<<<<< HEAD
 			users.map((user) => (user.id === id ? { ...user, ...values } : user));
 		} else {
 			const newUser = { ...values, id: users.length + 1 };
 			users.push(newUser);
-=======
-			const updatedData = savedData.map((user) =>
-				user.id === Number(id) ? { ...user, ...values } : user
-			);
-			localStorage.setItem("formData", JSON.stringify(updatedData));
-		} else {
-			console.log(Date.now());
-
-			const newEntry = id ? { ...values } : { id: Date.now(), ...values };
-			savedData.push(newEntry);
-			localStorage.setItem("formData", JSON.stringify(savedData));
->>>>>>> e0c3a95ccd1cf79c57bce3f9d3cabd893709f8e6
 		}
 		// navigate("/");
 	};
@@ -179,7 +162,6 @@ const UserForm = ({ users, id }) => {
 							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>
 								<Field name="phone">
-<<<<<<< HEAD
 									{({ field, form }) => (
 										<PhoneInput
 											country={"in"}
@@ -203,7 +185,6 @@ const UserForm = ({ users, id }) => {
 											}}
 										/>
 									)}
-=======
 									{({ field, form }) => {
 										// console.log(form.errors.phone);
 										// console.log("Touched: ", form.touched.phone);
@@ -231,7 +212,6 @@ const UserForm = ({ users, id }) => {
 											// />
 										);
 									}}
->>>>>>> e0c3a95ccd1cf79c57bce3f9d3cabd893709f8e6
 								</Field>
 							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>
