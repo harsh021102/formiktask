@@ -9,7 +9,6 @@ function App() {
 			<Route path="/" element={<UserCards />} />
 			<Route path="/new" element={<UserForm />} />
 			<Route path="/edit/:id" element={<UserForm />} />
-			{/* <UserForm /> */}
 		</Routes>
 	);
 }

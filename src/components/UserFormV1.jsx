@@ -8,14 +8,12 @@ import {
 	Typography,
 	Box,
 } from "@mui/material";
-import PhoneInput from "react-phone-input-2";
 import * as Yup from "yup";
 import { Field, Formik, Form } from "formik";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Today, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router";
 import { useEffect } from "react";
-import "react-phone-input-2/lib/style.css";
 const validationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
 	email: Yup.string().email("Invalid email format").required("Required!"),
@@ -37,7 +35,7 @@ const validationSchema = Yup.object({
 		.required("Date of Birth is required"),
 	gender: Yup.string().required("Gender is required"),
 });
-const UserForm = () => {
+const UserFormV1 = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
@@ -66,18 +64,20 @@ const UserForm = () => {
 		const savedData = JSON.parse(localStorage.getItem("formData")) || [];
 
 		if (id) {
+			// Updating existing user
 			const updatedData = savedData.map((user) =>
 				user.id === Number(id) ? { ...user, ...values } : user
 			);
 			localStorage.setItem("formData", JSON.stringify(updatedData));
 		} else {
+			// Adding a new user
 			console.log(Date.now());
 
-			const newEntry = id ? { ...values } : { id: Date.now(), ...values };
-			savedData.push(newEntry);
+			const newEntry = id ? { ...values } : { id: Date.now(), ...values }; // ✅ Ensure `id` is set for new entries
+			savedData.push(newEntry); // Push new entry to localStorage
 			localStorage.setItem("formData", JSON.stringify(savedData));
 		}
-		// navigate("/");
+		navigate("/");
 	};
 
 	const togglePasswordVisibility = () => {
@@ -172,28 +172,18 @@ const UserForm = () => {
 									{({ field, form }) => {
 										// console.log(form.errors.phone);
 										// console.log("Touched: ", form.touched.phone);
-										// console.log(field);
+
 										return (
-											<PhoneInput
+											<TextField
 												{...field}
-												country={"us"}
-												enableSearch
-												id="phone-field" // Pass a unique id here
-												name="phone"
-												onBlur={() =>
-													form.setTouched({ ...form.touched, phone: true })
-												}
+												fullWidth
+												label="Phone Number"
+												type="tel"
+												variant="outlined"
+												required
+												error={form.touched.phone && Boolean(form.errors.phone)}
+												helperText={form.touched.phone && form.errors.phone}
 											/>
-											// <TextField
-											// 	{...field}
-											// 	fullWidth
-											// 	label="Phone Number"
-											// 	type="tel"
-											// 	variant="outlined"
-											// 	required
-											// 	error={form.touched.phone && Boolean(form.errors.phone)}
-											// 	helperText={form.touched.phone && form.errors.phone}
-											// />
 										);
 									}}
 								</Field>
@@ -274,4 +264,4 @@ const UserForm = () => {
 	);
 };
 
-export default UserForm;
+export default UserFormV1;
