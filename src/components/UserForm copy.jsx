@@ -11,18 +11,15 @@ import {
 import * as Yup from "yup";
 import { Field, Formik, Form } from "formik";
 import { IconButton, InputAdornment } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useNavigate } from "react-router";
+import { Today, Visibility, VisibilityOff } from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router";
 import { useEffect } from "react";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css"; // Import PhoneInput CSS
-import ImageUpload from "./ImageUpload";
 const validationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
 	email: Yup.string().email("Invalid email format").required("Required!"),
-	// phone: Yup.string()
-	// 	.matches(/^\d{10}$/, "Phone number must be exactly 10 digits")
-	// 	.required("Phone number is required"),
+	phone: Yup.string()
+		.matches(/^\d{10}$/, "Phone number must be exactly 10 digits")
+		.required("Phone number is required"),
 
 	password: Yup.string()
 		.matches(
@@ -38,11 +35,12 @@ const validationSchema = Yup.object({
 		.required("Date of Birth is required"),
 	gender: Yup.string().required("Gender is required"),
 });
-const UserForm = ({ users, id }) => {
-	// const { id } = useParams();
+const UserForm = () => {
+	const { id } = useParams();
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [initialValues, setInitialValues] = useState({
+		//id: "",
 		fname: "",
 		lname: "",
 		email: "",
@@ -54,19 +52,33 @@ const UserForm = ({ users, id }) => {
 
 	useEffect(() => {
 		if (id) {
-			const userData = users.find((user) => user.id === Number(id));
+			const savedData = JSON.parse(localStorage.getItem("formData")) || [];
+			const userData = savedData.find((user) => user.id === Number(id));
 			if (userData) {
 				setInitialValues(userData);
 			}
+			// } else {
+			// 	setInitialValues((prev) => ({ ...prev, id: Date.now() }));
+			// }
 		}
-	}, [id, users]);
+	}, [id]);
 
 	const onSubmit = (values) => {
+		const savedData = JSON.parse(localStorage.getItem("formData")) || [];
+
 		if (id) {
-			users.map((user) => (user.id === id ? { ...user, ...values } : user));
+			// Updating existing user
+			const updatedData = savedData.map((user) =>
+				user.id === Number(id) ? { ...user, ...values } : user
+			);
+			localStorage.setItem("formData", JSON.stringify(updatedData));
 		} else {
-			const newUser = { ...values, id: users.length + 1 };
-			users.push(newUser);
+			// Adding a new user
+			console.log(Date.now());
+
+			const newEntry = id ? { ...values } : { id: Date.now(), ...values }; // ✅ Ensure `id` is set for new entries
+			savedData.push(newEntry); // Push new entry to localStorage
+			localStorage.setItem("formData", JSON.stringify(savedData));
 		}
 		navigate("/");
 	};
@@ -94,7 +106,6 @@ const UserForm = ({ users, id }) => {
 							alignItems="center"
 							style={{ width: "100%" }}
 						>
-							<ImageUpload />
 							<Grid item xs={12} style={{ width: "100%" }}>
 								<Field name="fname">
 									{({ field, form }) => (
@@ -161,29 +172,23 @@ const UserForm = ({ users, id }) => {
 							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>
 								<Field name="phone">
-									{({ field, form }) => (
-										<PhoneInput
-											country={"in"}
-											enableSearch={true}
-											value={field.value}
-											onBlur={field.onBlur}
-											onChange={(phone) => form.setFieldValue("phone", phone)}
-											inputProps={{
-												id: "phone",
-												name: "phone",
-												autoComplete: "tel",
-											}}
-											inputStyle={{
-												width: "100%",
-												height: "56px",
-												borderRadius: "5px",
-												borderColor:
-													form.touched.phone && form.errors.phone
-														? "red"
-														: "#ccc",
-											}}
-										/>
-									)}
+									{({ field, form }) => {
+										// console.log(form.errors.phone);
+										// console.log("Touched: ", form.touched.phone);
+
+										return (
+											<TextField
+												{...field}
+												fullWidth
+												label="Phone Number"
+												type="tel"
+												variant="outlined"
+												required
+												error={form.touched.phone && Boolean(form.errors.phone)}
+												helperText={form.touched.phone && form.errors.phone}
+											/>
+										);
+									}}
 								</Field>
 							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>

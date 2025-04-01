@@ -5,13 +5,13 @@ import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { useState } from "react";
 
-const UserCards = () => {
-	const [users, setUsers] = useState([]);
-	useEffect(() => {
-		const userData = JSON.parse(localStorage.getItem("formData")) || [];
-		setUsers(userData);
-		// console.log(users);
-	}, []);
+const UserCards = ({ setId, users }) => {
+	// const [users, setUsers] = useState([]);
+	// useEffect(() => {
+	// 	const userData = JSON.parse(localStorage.getItem("formData")) || [];
+	// 	setUsers(userData);
+	// 	// console.log(users);
+	// }, []);
 	const navigate = useNavigate();
 	return (
 		<Container>
@@ -85,7 +85,10 @@ const UserCards = () => {
 								<Button
 									variant="contained"
 									color="primary"
-									onClick={() => navigate(`/edit/${user.id}`)}
+									onClick={() => {
+										navigate("/edit");
+										setId(user.id);
+									}}
 									sx={{ mt: 2 }}
 								>
 									Edit

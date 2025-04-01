@@ -1,14 +1,16 @@
-import logo from "./logo.svg";
 import UserForm from "./components/UserForm";
 import UserCards from "./components/UserCards";
 import { Routes, Route } from "react-router";
+import { useState } from "react";
 
 function App() {
+	const [users, setUsers] = useState([]);
+	const [id, setId] = useState(null);
 	return (
 		<Routes>
-			<Route path="/" element={<UserCards />} />
-			<Route path="/new" element={<UserForm />} />
-			<Route path="/edit/:id" element={<UserForm />} />
+			<Route path="/" element={<UserCards setId={setId} users={users} />} />
+			<Route path="/new" element={<UserForm users={users} id={null} />} />
+			<Route path="/edit" element={<UserForm users={users} id={id} />} />
 			{/* <UserForm /> */}
 		</Routes>
 	);
