@@ -47,6 +47,7 @@ const UserCards = ({ setId, users }) => {
 									justifyContent: "space-between",
 									padding: 2,
 									height: 250,
+									border: "1px solid lightgray",
 								}}
 							>
 								<Box>
