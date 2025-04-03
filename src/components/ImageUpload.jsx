@@ -1,68 +1,65 @@
-import React, { useState, useEffect } from "react";
-import { Button, Box, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Button, Typography } from "@mui/material";
 
-const ImageUpload = () => {
-	const [image, setImage] = useState(null);
-	const [preview, setPreview] = useState(null);
+const ImageUpload = ({ field, form }) => {
+	const [preview, setPreview] = useState(field.value || null);
+	const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
-	const handleImageChange = (event) => {
+	const handleFileChange = (event) => {
 		const file = event.target.files[0];
+
 		if (file) {
-			setImage(file);
-			const objectUrl = URL.createObjectURL(file);
-			setPreview(objectUrl);
-			// window.open(preview, "_blank");
-			console.log(preview);
+			if (!file.type.startsWith("image/")) {
+				form.setFieldError(field.name, "Only image files are allowed!");
+				return;
+			}
+
+			if (file.size > MAX_SIZE) {
+				form.setFieldError(field.name, "File size must be less than 2MB!");
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setPreview(reader.result);
+				form.setFieldValue(field.name, reader.result);
+			};
+			reader.readAsDataURL(file);
 		}
 	};
-
-	const handleOpenInNewTab = () => {
-		if (preview) {
-			window.open(preview, "_blank"); // Open image in new tab
-		}
-	};
-
-	useEffect(() => {
-		return () => {
-			if (preview) URL.revokeObjectURL(preview); // Clean up URL when component unmounts
-		};
-	}, [preview]);
 
 	return (
-		<Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-			<Typography variant="h6">Upload an Image</Typography>
+		<Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+			{/* Image Preview */}
+			{preview && (
+				<Box
+					component="img"
+					src={preview}
+					alt="Profile Preview"
+					sx={{
+						width: 100,
+						height: 100,
+						borderRadius: "50%",
+						objectFit: "cover",
+						border: "2px solid gray",
+					}}
+				/>
+			)}
 
+			{/* Upload Button (Ensuring input is correctly placed) */}
 			<Button variant="contained" component="label">
-				Select Image
+				Upload Profile Picture
 				<input
 					type="file"
-					accept="image/*"
 					hidden
-					onChange={handleImageChange}
+					accept="image/*"
+					onChange={handleFileChange}
 				/>
 			</Button>
 
-			{preview && (
-				<Box mt={2}>
-					<Typography variant="subtitle1">Preview:</Typography>
-					<img
-						src={preview}
-						alt="Preview"
-						style={{
-							width: "150px",
-							height: "150px",
-							objectFit: "cover",
-							borderRadius: "8px",
-						}}
-					/>
-					<Button
-						variant="outlined"
-						sx={{ marginTop: 1 }}
-						onClick={handleOpenInNewTab}
-					>
-						Open in New Tab
-					</Button>
-				</Box>
+			{/* Display Errors */}
+			{form.errors[field.name] && (
+				<Typography color="error">{form.errors[field.name]}</Typography>
 			)}
 		</Box>
 	);

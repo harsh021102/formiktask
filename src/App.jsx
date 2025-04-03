@@ -9,8 +9,11 @@ function App() {
 	return (
 		<Routes>
 			<Route path="/" element={<UserCards setId={setId} users={users} />} />
-			<Route path="/new" element={<UserForm users={users} id={null} />} />
-			<Route path="/edit" element={<UserForm users={users} id={id} />} />
+			<Route path="/new" element={<UserForm users={users} />} />
+			<Route
+				path="/edit"
+				element={<UserForm users={users} id={id} setUsers={setUsers} />}
+			/>
 			{/* <UserForm /> */}
 		</Routes>
 	);

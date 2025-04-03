@@ -10,21 +10,35 @@ import {
 } from "@mui/material";
 import PhoneInput from "react-phone-input-2";
 import * as Yup from "yup";
-import { Field, Formik, Form } from "formik";
+import { Field, Formik, Form, ErrorMessage } from "formik";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
-import "react-phone-input-2/lib/style.css"; // Import PhoneInput CSS
-import ImageUpload from "./ImageUpload";
 import "react-phone-input-2/lib/style.css";
+import "react-phone-input-2/lib/style.css";
+
+const FILE_SIZE = 1024 * 1024 * 2;
+const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const validationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
 	email: Yup.string().email("Invalid email format").required("Required!"),
-	// phone: Yup.string()
-	// 	.matches(/^\d{10}$/, "Phone number must be exactly 10 digits")
-	// 	.required("Phone number is required"),
-
+	image: Yup.mixed()
+		.required("Image is required")
+		.test(
+			"fileSize",
+			"File too large. Please upload image of size less than 2MB",
+			(value) => {
+				return value && value.size <= FILE_SIZE;
+			}
+		)
+		.test(
+			"fileFormat",
+			"Unsupported format. Please upload jpeg, jpg or png format",
+			(value) => {
+				return value && SUPPORTED_FORMATS.includes(value.type);
+			}
+		),
 	password: Yup.string()
 		.matches(
 			/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
@@ -39,10 +53,10 @@ const validationSchema = Yup.object({
 		.required("Date of Birth is required"),
 	gender: Yup.string().required("Gender is required"),
 });
-const UserForm = ({ users, id }) => {
-	// const { id } = useParams();
+const UserForm = ({ users, id, setUsers }) => {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
+	const [preview, setPreview] = useState(null);
 	const [initialValues, setInitialValues] = useState({
 		fname: "",
 		lname: "",
@@ -51,6 +65,7 @@ const UserForm = ({ users, id }) => {
 		gender: "",
 		dob: "",
 		phone: "",
+		image: null,
 	});
 
 	useEffect(() => {
@@ -58,23 +73,40 @@ const UserForm = ({ users, id }) => {
 			const userData = users.find((user) => user.id === Number(id));
 			if (userData) {
 				setInitialValues(userData);
+				if (userData.image) {
+					const reader = new FileReader();
+					reader.onloadend = () => setPreview(reader.result);
+					reader.readAsDataURL(userData.image);
+				}
 			}
 		}
 	}, [id, users]);
 
 	const onSubmit = (values) => {
+		console.log("Form Values:", values);
+
 		if (id) {
-			users.map((user) => (user.id === id ? { ...user, ...values } : user));
+			setUsers((users) =>
+				users.map((user) => (user.id === id ? { ...user, ...values } : user))
+			);
 		} else {
 			const newUser = { ...values, id: users.length + 1 };
 			users.push(newUser);
 		}
-		// navigate("/");
+		navigate("/");
 	};
-
 	const togglePasswordVisibility = () => {
 		setShowPassword((prev) => !prev);
 	};
+	const handleFileChange = (event) => {
+		const file = event.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onloadend = () => setPreview(reader.result);
+		}
+	};
+	useEffect(() => {}, [initialValues.image]);
+
 	return (
 		<Container maxWidth="sm">
 			<Box display="flex" flexDirection="column" alignItems="center">
@@ -95,7 +127,55 @@ const UserForm = ({ users, id }) => {
 							alignItems="center"
 							style={{ width: "100%" }}
 						>
-							<ImageUpload />
+							<Grid item xs={12} style={{ width: "100%" }}>
+								{preview && (
+									<Box
+										component="img"
+										src={preview}
+										alt="Uploaded"
+										sx={{
+											width: "150px",
+											height: "150px",
+											borderRadius: "100%",
+											objectFit: "cover",
+											border: "2px solid #ddd",
+											boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+										}}
+									/>
+								)}
+								<Field name="image">
+									{({ field, form }) => (
+										<Box display="flex" flexDirection="column" gap={2}>
+											<input
+												accept="image/*"
+												style={{ display: "none" }}
+												id="file-upload"
+												type="file"
+												onChange={(event) => {
+													const file = event.currentTarget.files[0];
+													form.setFieldValue("image", file);
+													setInitialValues({ ...initialValues, image: file });
+													handleFileChange(event);
+												}}
+											/>
+											<label htmlFor="file-upload">
+												<Button
+													variant="contained"
+													color="primary"
+													component="span"
+												>
+													Upload Profile Image
+												</Button>
+											</label>
+										</Box>
+									)}
+								</Field>
+								<ErrorMessage
+									name="image"
+									component="div"
+									style={{ color: "red" }}
+								/>
+							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>
 								<Field name="fname">
 									{({ field, form }) => (
@@ -185,33 +265,6 @@ const UserForm = ({ users, id }) => {
 											}}
 										/>
 									)}
-									{({ field, form }) => {
-										// console.log(form.errors.phone);
-										// console.log("Touched: ", form.touched.phone);
-										// console.log(field);
-										return (
-											<PhoneInput
-												{...field}
-												country={"us"}
-												enableSearch
-												id="phone-field" // Pass a unique id here
-												name="phone"
-												onBlur={() =>
-													form.setTouched({ ...form.touched, phone: true })
-												}
-											/>
-											// <TextField
-											// 	{...field}
-											// 	fullWidth
-											// 	label="Phone Number"
-											// 	type="tel"
-											// 	variant="outlined"
-											// 	required
-											// 	error={form.touched.phone && Boolean(form.errors.phone)}
-											// 	helperText={form.touched.phone && form.errors.phone}
-											// />
-										);
-									}}
 								</Field>
 							</Grid>
 							<Grid item xs={12} style={{ width: "100%" }}>

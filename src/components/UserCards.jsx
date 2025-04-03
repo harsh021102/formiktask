@@ -4,6 +4,7 @@ import { Typography, Button, Grid, Container, Box, Paper } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { useState } from "react";
+import ImagePreview from "./ImagePreview";
 
 const UserCards = ({ setId, users }) => {
 	// const [users, setUsers] = useState([]);
@@ -46,10 +47,11 @@ const UserCards = ({ setId, users }) => {
 									flexDirection: "column",
 									justifyContent: "space-between",
 									padding: 2,
-									height: 250,
+									height: 400,
 									border: "1px solid lightgray",
 								}}
 							>
+								<ImagePreview imageFile={user.image} />
 								<Box>
 									<Typography variant="h4" color="initial" sx={{ mt: 1 }}>
 										Name: {user.fname} {user.lname}
