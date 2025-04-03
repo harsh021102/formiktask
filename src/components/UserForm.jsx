@@ -17,7 +17,6 @@ import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import "react-phone-input-2/lib/style.css";
 import "react-phone-input-2/lib/style.css";
-
 const FILE_SIZE = 1024 * 1024 * 2;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const validationSchema = Yup.object({
@@ -67,7 +66,6 @@ const UserForm = ({ users, id, setUsers }) => {
 		phone: "",
 		image: null,
 	});
-
 	useEffect(() => {
 		if (id) {
 			const userData = users.find((user) => user.id === Number(id));
@@ -81,9 +79,7 @@ const UserForm = ({ users, id, setUsers }) => {
 			}
 		}
 	}, [id, users]);
-
 	const onSubmit = (values) => {
-		// console.log("Form Values:", values);
 		if (id) {
 			setUsers((users) =>
 				users.map((user) => (user.id === id ? { ...user, ...values } : user))
@@ -101,17 +97,10 @@ const UserForm = ({ users, id, setUsers }) => {
 		const file = event.target.files[0];
 		if (file) {
 			const reader = new FileReader();
-			// console.log("Reader Results:", reader);
-
 			reader.onloadend = () => setPreview(reader.result);
 			reader.readAsDataURL(file);
 		}
 	};
-	useEffect(() => {
-		// console.log("initialValues.image", initialValues.image);
-		// console.log("preview", preview);
-	}, [initialValues.image, preview]);
-
 	return (
 		<Container maxWidth="sm">
 			<Box display="flex" flexDirection="column" alignItems="center">
