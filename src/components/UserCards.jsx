@@ -36,7 +36,7 @@ const UserCards = ({ setId, users }) => {
 				<Grid
 					container
 					spacing={2}
-					sx={{ width: "100%", mt: 2, overflowY: "auto" }}
+					sx={{ width: "100%", mt: 2, overflowY: "auto", height: 500 }}
 				>
 					{users.map((user) => (
 						<Grid size={{ xs: 12, md: 4 }} key={user.id}>
@@ -47,7 +47,7 @@ const UserCards = ({ setId, users }) => {
 									flexDirection: "column",
 									justifyContent: "space-between",
 									padding: 2,
-									height: 400,
+									height: 450,
 									border: "1px solid lightgray",
 								}}
 							>

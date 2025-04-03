@@ -83,8 +83,7 @@ const UserForm = ({ users, id, setUsers }) => {
 	}, [id, users]);
 
 	const onSubmit = (values) => {
-		console.log("Form Values:", values);
-
+		// console.log("Form Values:", values);
 		if (id) {
 			setUsers((users) =>
 				users.map((user) => (user.id === id ? { ...user, ...values } : user))
@@ -102,10 +101,16 @@ const UserForm = ({ users, id, setUsers }) => {
 		const file = event.target.files[0];
 		if (file) {
 			const reader = new FileReader();
+			// console.log("Reader Results:", reader);
+
 			reader.onloadend = () => setPreview(reader.result);
+			reader.readAsDataURL(file);
 		}
 	};
-	useEffect(() => {}, [initialValues.image]);
+	useEffect(() => {
+		// console.log("initialValues.image", initialValues.image);
+		// console.log("preview", preview);
+	}, [initialValues.image, preview]);
 
 	return (
 		<Container maxWidth="sm">
