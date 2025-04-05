@@ -4,11 +4,26 @@ import { Routes, Route } from "react-router";
 import { useState } from "react";
 
 function App() {
-	const [users, setUsers] = useState([]);
+	const [users, setUsers] = useState([
+		{
+			id: 1,
+			fname: "Harsh",
+			lname: "Singh",
+			email: "harsh@gmail.com",
+			password: "H@rsh1601",
+			gender: "",
+			dob: "",
+			phone: "917393917886",
+			image: null,
+		},
+	]);
 	const [id, setId] = useState(null);
 	return (
 		<Routes>
-			<Route path="/" element={<UserCards setId={setId} users={users} />} />
+			<Route
+				path="/"
+				element={<UserCards setId={setId} users={users} setUsers={setUsers} />}
+			/>
 			<Route path="/new" element={<UserForm users={users} />} />
 			<Route
 				path="/edit"
