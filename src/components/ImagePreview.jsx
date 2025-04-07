@@ -5,13 +5,14 @@ import React, { useEffect } from "react";
 const ImagePreview = ({ imageFile }) => {
 	const [preview, setPreview] = React.useState(null);
 	useEffect(() => {
+		// console.log(def);
 		if (imageFile) {
 			// setFieldValue("image", file); // Store actual file for validation
 			const reader = new FileReader();
 			reader.onloadend = () => setPreview(reader.result); // Only update preview
 			reader.readAsDataURL(imageFile);
 		}
-	}, []);
+	}, [imageFile]);
 	return imageFile ? (
 		<Box
 			component="img"

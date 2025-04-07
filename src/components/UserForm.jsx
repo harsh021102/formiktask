@@ -16,8 +16,10 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import "react-phone-input-2/lib/style.css";
-import "react-phone-input-2/lib/style.css";
-const FILE_SIZE = 1024 * 1024 * 2;
+// import "react-phone-input-2/lib/style.css";
+import defaultImg from "../img/defaultImg.jpg";
+// import { de } from "date-fns/locale";
+const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const validationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
@@ -26,7 +28,7 @@ const validationSchema = Yup.object({
 		.required("Image is required")
 		.test(
 			"fileSize",
-			"File too large. Please upload image of size less than 2MB",
+			"File too large. Please upload image of size less than 5MB",
 			(value) => {
 				return value && value.size <= FILE_SIZE;
 			}
@@ -52,10 +54,16 @@ const validationSchema = Yup.object({
 		.required("Date of Birth is required"),
 	gender: Yup.string().required("Gender is required"),
 });
+const urlToFile = async (url, filename, mimeType) => {
+	const res = await fetch(url);
+	const blob = await res.blob();
+	return new File([blob], filename, { type: mimeType || blob.type });
+};
 const UserForm = ({ users, id, setUsers }) => {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [preview, setPreview] = useState(null);
+
 	const [initialValues, setInitialValues] = useState({
 		fname: "",
 		lname: "",
@@ -64,8 +72,21 @@ const UserForm = ({ users, id, setUsers }) => {
 		gender: "",
 		dob: "",
 		phone: "",
-		image: null,
+		image: defaultImg,
 	});
+	const loadDefault = async () => {
+		const file = await urlToFile(defaultImg, "defaultImg.jpg", "image/jpg");
+		console.log(file);
+		setPreview(defaultImg);
+		setInitialValues((prev) => ({
+			...prev,
+			image: file,
+		}));
+	};
+	useEffect(() => {
+		loadDefault();
+	}, []);
+
 	useEffect(() => {
 		if (id) {
 			const userData = users.find((user) => user.id === Number(id));
@@ -79,7 +100,13 @@ const UserForm = ({ users, id, setUsers }) => {
 			}
 		}
 	}, [id, users]);
+
+	useEffect(() => {
+		console.log("Initial Values: ", initialValues);
+	}, [initialValues]);
 	const onSubmit = (values) => {
+		console.log(id, values);
+
 		if (id) {
 			setUsers((users) =>
 				users.map((user) => (user.id === id ? { ...user, ...values } : user))
@@ -95,6 +122,8 @@ const UserForm = ({ users, id, setUsers }) => {
 	};
 	const handleFileChange = (event) => {
 		const file = event.target.files[0];
+		console.log(file);
+
 		if (file) {
 			const reader = new FileReader();
 			reader.onloadend = () => setPreview(reader.result);
@@ -119,27 +148,36 @@ const UserForm = ({ users, id, setUsers }) => {
 							spacing={2}
 							direction="column"
 							alignItems="center"
-							style={{ width: "100%" }}
+							style={{
+								width: "100%",
+							}}
 						>
 							<Grid item xs={12} style={{ width: "100%" }}>
 								{preview && (
-									<Box
-										component="img"
-										src={preview}
-										alt="Uploaded"
-										sx={{
-											width: "150px",
-											height: "150px",
-											borderRadius: "100%",
-											objectFit: "cover",
-											border: "2px solid #ddd",
-											boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
-										}}
-									/>
+									<Box sx={{ display: "flex", justifyContent: "center" }}>
+										<Box
+											component="img"
+											src={preview}
+											alt="Uploaded"
+											sx={{
+												width: "150px",
+												height: "150px",
+												borderRadius: "100%",
+												objectFit: "cover",
+												border: "2px solid #ddd",
+												boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+											}}
+										/>
+									</Box>
 								)}
 								<Field name="image">
 									{({ field, form }) => (
-										<Box display="flex" flexDirection="column" gap={2}>
+										<Box
+											display="flex"
+											flexDirection="row"
+											justifyContent="center"
+											gap={2}
+										>
 											<input
 												accept="image/*"
 												style={{ display: "none" }}
@@ -148,7 +186,10 @@ const UserForm = ({ users, id, setUsers }) => {
 												onChange={(event) => {
 													const file = event.currentTarget.files[0];
 													form.setFieldValue("image", file);
-													setInitialValues({ ...initialValues, image: file });
+													setInitialValues((prev) => ({
+														...prev,
+														image: file,
+													}));
 													handleFileChange(event);
 												}}
 											/>
@@ -158,9 +199,19 @@ const UserForm = ({ users, id, setUsers }) => {
 													color="primary"
 													component="span"
 												>
-													Upload Profile Image
+													Edit Profile Image
 												</Button>
 											</label>
+											<Button
+												variant="contained"
+												color="primary"
+												component="span"
+												onClick={() => {
+													loadDefault();
+												}}
+											>
+												Delete Image
+											</Button>
 										</Box>
 									)}
 								</Field>

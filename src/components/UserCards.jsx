@@ -19,19 +19,44 @@ import DateFilter from "./DateFilter";
 const UserCards = ({ setId, users, setUsers }) => {
 	const [gender, setGender] = useState("");
 	const [query, setQuery] = useState("");
-	const [value, setValue] = React.useState([null, null]);
+	const [dateRange, setDateRange] = useState([null, null]);
 	const navigate = useNavigate();
+	const parseDateString = (dobStr) => {
+		if (!dobStr) return null;
+
+		// Example for DD-MM-YYYY format
+		const [day, month, year] = dobStr.split("-");
+		if (!day || !month || !year) return null;
+
+		return new Date(`${year}-${month}-${day}`);
+	};
 	const filteredUsers = () => {
+		const [startDate, endDate] = dateRange || [];
+
 		return users.filter((user) => {
+			const dob = parseDateString(user.dob);
+
+			if (!dob || isNaN(dob)) {
+				console.warn("Invalid DOB:", user.dob);
+				return false;
+			}
+
+			const start = startDate ? new Date(startDate) : null;
+			const end = endDate ? new Date(endDate) : null;
+
+			const matchesDOB = (!start || dob >= start) && (!end || dob <= end);
+
 			const matchesSearch =
 				!query ||
 				user.fname.toLowerCase().includes(query.toLowerCase()) ||
 				user.email.toLowerCase().includes(query.toLowerCase());
 
 			const matchesGender =
-				gender === "" || user.gender.toLowerCase() === gender.toLowerCase();
-
-			return matchesSearch && matchesGender;
+				!gender || user.gender.toLowerCase() === gender.toLowerCase();
+			if (start && end && new Date(start) > new Date(end)) {
+				return matchesSearch && matchesGender;
+			}
+			return matchesSearch && matchesGender && matchesDOB;
 		});
 	};
 	const handleChange = (event) => {
@@ -40,7 +65,9 @@ const UserCards = ({ setId, users, setUsers }) => {
 	const handleDelete = (id) => {
 		setUsers((filteredUsers) => filteredUsers.filter((user) => user.id !== id));
 	};
-
+	useEffect(() => {
+		console.log(dateRange);
+	}, [dateRange]);
 	return (
 		<Container>
 			<Box
@@ -80,7 +107,7 @@ const UserCards = ({ setId, users, setUsers }) => {
 						</FormControl>
 					</Box>
 				)}
-				<DateFilter />
+				<DateFilter setDateRange={setDateRange} />
 				<Grid
 					container
 					spacing={2}
