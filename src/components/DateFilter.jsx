@@ -9,18 +9,23 @@ const DateFilter = ({ dateRange, setDateRange }) => {
 		if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
 			setDateError("Start date cannot be after end date.");
 		} else {
-			setDateError(""); // clear error
+			setDateError("");
 		}
 	}, [startDate, endDate]);
-	// useEffect(() => {
-	// 	console.log("DateFiler", dateRange[0], dateRange[1]);
-	// }, []);
+
 	useEffect(() => {
 		setDateRange([startDate, endDate]);
 	}, [startDate, endDate, setDateRange]);
 	return (
 		<>
-			<Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					mt: 2,
+					width: { xs: "70%", sm: "50%" },
+				}}
+			>
 				<TextField
 					fullWidth
 					label="Start Date"
@@ -28,7 +33,7 @@ const DateFilter = ({ dateRange, setDateRange }) => {
 					variant="outlined"
 					InputLabelProps={{ shrink: true }}
 					required
-					sx={{ width: "20%" }}
+					sx={{ width: "49%" }}
 					value={startDate}
 					onChange={(e) => {
 						setStartDate(e.target.value);
@@ -42,7 +47,7 @@ const DateFilter = ({ dateRange, setDateRange }) => {
 					variant="outlined"
 					InputLabelProps={{ shrink: true }}
 					required
-					sx={{ width: "20%" }}
+					sx={{ width: "49%" }}
 					value={endDate}
 					onChange={(e) => {
 						setEndDate(e.target.value);

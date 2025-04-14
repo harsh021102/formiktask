@@ -2,7 +2,7 @@ import { Image } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import React, { useEffect } from "react";
 
-const ImagePreview = ({ imageFile }) => {
+const ImagePreview = ({ imageFile, tableView }) => {
 	const [preview, setPreview] = React.useState(null);
 	useEffect(() => {
 		// console.log(def);
@@ -13,14 +13,18 @@ const ImagePreview = ({ imageFile }) => {
 			reader.readAsDataURL(imageFile);
 		}
 	}, [imageFile]);
+	useEffect(() => {
+		console.log(tableView);
+	});
 	return imageFile ? (
 		<Box
 			component="img"
 			src={preview}
 			alt="Uploaded"
 			sx={{
-				width: "150px",
-				height: "150px",
+				width: tableView ? "40px" : "140px",
+				// backgroundColor: "yellow",
+				height: tableView ? "40px" : "140px",
 				borderRadius: "100%",
 				objectFit: "cover", // Ensures the image is cropped nicely
 				border: "2px solid #ddd",

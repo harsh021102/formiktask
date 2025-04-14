@@ -15,11 +15,15 @@ import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
 import SearchBar from "./SearchBar";
 import DateFilter from "./DateFilter";
+import View from "../img/View.svg";
+import { Image } from "@mui/icons-material";
+import TableView from "./TableView";
 
 const UserCards = ({ setId, users, setUsers }) => {
 	const [gender, setGender] = useState("");
 	const [query, setQuery] = useState("");
 	const [dateRange, setDateRange] = useState([null, null]);
+	const [showTable, setShowTable] = useState(true);
 	const navigate = useNavigate();
 	const parseDateString = (dobStr) => {
 		if (!dobStr) return null;
@@ -66,8 +70,8 @@ const UserCards = ({ setId, users, setUsers }) => {
 		setUsers((filteredUsers) => filteredUsers.filter((user) => user.id !== id));
 	};
 	useEffect(() => {
-		console.log(dateRange);
-	}, [dateRange]);
+		console.log(showTable);
+	}, [showTable]);
 	return (
 		<Container>
 			<Box
@@ -107,102 +111,150 @@ const UserCards = ({ setId, users, setUsers }) => {
 						</FormControl>
 					</Box>
 				)}
-				<DateFilter setDateRange={setDateRange} />
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						mt: 2,
+					}}
+				>
+					<DateFilter setDateRange={setDateRange} />
+					<Button
+						sx={{ width: "40px", height: "100%" }}
+						onClick={() => {
+							setShowTable((prev) => !prev);
+						}}
+					>
+						<Box
+							component="img"
+							src={View}
+							alt="Uploaded"
+							cursor="pointer"
+							sx={{
+								width: "50%",
+								height: "50%",
+								objectFit: "cover",
+								border: "2px solid #ddd",
+								boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+								pointer: "cursor",
+							}}
+						/>
+					</Button>
+				</Box>
 				<Grid
 					container
 					spacing={2}
 					sx={{ width: "100%", mt: 2, overflowY: "auto", height: 500 }}
 				>
-					{filteredUsers().map((user) => (
-						<Grid size={{ xs: 12, md: 4 }} key={user.id}>
-							<Paper
-								elevation={2}
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "center",
-									justifyContent: "space-between",
-									padding: 2,
-									height: 450,
-									border: "1px solid lightgray",
-								}}
-							>
-								<ImagePreview imageFile={user.image} />
-								<Box
+					{showTable ? (
+						filteredUsers().map((user) => (
+							<Grid size={{ xs: 12, md: 4 }} key={user.id}>
+								<Paper
+									elevation={2}
 									sx={{
 										display: "flex",
 										flexDirection: "column",
-										alignItems: "start",
-										width: "100%",
-									}}
-								>
-									<Typography variant="h5" color="initial" sx={{ mt: 1 }}>
-										Name: {user.fname} {user.lname}
-									</Typography>
-									<Typography
-										variant="subtitle1"
-										color="initial"
-										sx={{ mt: 1 }}
-									>
-										Email: {user.email}
-									</Typography>
-									<Typography
-										variant="subtitle1"
-										color="initial"
-										sx={{ mt: 1 }}
-									>
-										Phone: {user.phone}
-									</Typography>
-									<Typography
-										variant="subtitle1"
-										color="initial"
-										sx={{ mt: 1 }}
-									>
-										Date of birth: {user.dob}
-									</Typography>
-									<Typography
-										variant="subtitle1"
-										color="initial"
-										sx={{ mt: 1 }}
-									>
-										Gender: {user.gender}
-									</Typography>
-								</Box>
-								<Box
-									sx={{
-										display: "flex",
+										alignItems: "center",
 										justifyContent: "space-between",
-										gap: 1,
-										width: "100%",
+										padding: 2,
+										height: 450,
+										border: "1px solid lightgray",
 									}}
 								>
-									<Button
-										variant="contained"
-										color="primary"
-										onClick={() => {
-											navigate("/edit");
-											setId(user.id);
+									<Box
+										sx={{
+											// backgroundColor: "red",
+											width: "50%",
+											height: "150px",
 										}}
-										sx={{ width: "50%" }}
 									>
-										Edit
-									</Button>
-									<Button
-										variant="contained"
-										color="secondary"
-										onClick={() => {
-											navigate("/");
-											setId(user.id);
-											handleDelete(user.id);
+										<ImagePreview imageFile={user.image} tableView={false} />
+									</Box>
+
+									<Box
+										sx={{
+											display: "flex",
+											flexDirection: "column",
+											alignItems: "start",
+											width: "100%",
 										}}
-										sx={{ width: "50%" }}
 									>
-										Delete
-									</Button>
-								</Box>
-							</Paper>
-						</Grid>
-					))}
+										<Typography variant="h5" color="initial" sx={{ mt: 1 }}>
+											Name: {user.fname} {user.lname}
+										</Typography>
+										<Typography
+											variant="subtitle1"
+											color="initial"
+											sx={{ mt: 1 }}
+										>
+											Email: {user.email}
+										</Typography>
+										<Typography
+											variant="subtitle1"
+											color="initial"
+											sx={{ mt: 1 }}
+										>
+											Phone: {user.phone}
+										</Typography>
+										<Typography
+											variant="subtitle1"
+											color="initial"
+											sx={{ mt: 1 }}
+										>
+											Date of birth: {user.dob}
+										</Typography>
+										<Typography
+											variant="subtitle1"
+											color="initial"
+											sx={{ mt: 1 }}
+										>
+											Gender: {user.gender}
+										</Typography>
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											justifyContent: "space-between",
+											gap: 1,
+											width: "100%",
+										}}
+									>
+										<Button
+											variant="contained"
+											color="primary"
+											onClick={() => {
+												navigate("/edit");
+												setId(user.id);
+											}}
+											sx={{ width: "50%" }}
+										>
+											Edit
+										</Button>
+										<Button
+											variant="contained"
+											color="secondary"
+											onClick={() => {
+												navigate("/");
+												setId(user.id);
+												handleDelete(user.id);
+											}}
+											sx={{ width: "50%" }}
+										>
+											Delete
+										</Button>
+									</Box>
+								</Paper>
+							</Grid>
+						))
+					) : (
+						<TableView
+							setId={setId}
+							users={users}
+							setUsers={setUsers}
+							handleDelete={handleDelete}
+						/>
+					)}
 				</Grid>
 			</Box>
 		</Container>
