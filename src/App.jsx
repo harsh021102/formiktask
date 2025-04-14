@@ -42,7 +42,7 @@ function App() {
 			{
 				id: 3,
 				fname: "Anushka",
-				lname: "Sexena",
+				lname: "Saxena",
 				email: "harsh@gmail.com",
 				password: "H@rsh1601",
 				gender: "female",
@@ -52,7 +52,7 @@ function App() {
 			},
 			{
 				id: 4,
-				fname: "AAkanksha",
+				fname: "Aakanksha",
 				lname: "Verma",
 				email: "harsh@gmail.com",
 				password: "H@rsh1601",

@@ -250,7 +250,7 @@ const UserCards = ({ setId, users, setUsers }) => {
 					) : (
 						<TableView
 							setId={setId}
-							users={users}
+							users={filteredUsers()} // Pass filtered users
 							setUsers={setUsers}
 							handleDelete={handleDelete}
 						/>

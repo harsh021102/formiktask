@@ -16,9 +16,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import "react-phone-input-2/lib/style.css";
-// import "react-phone-input-2/lib/style.css";
 import defaultImg from "../img/defaultImg.jpg";
-// import { de } from "date-fns/locale";
 const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const validationSchema = Yup.object({
