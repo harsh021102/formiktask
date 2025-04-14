@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
 	Typography,
 	Button,
@@ -16,7 +16,6 @@ import ImagePreview from "./ImagePreview";
 import SearchBar from "./SearchBar";
 import DateFilter from "./DateFilter";
 import View from "../img/View.svg";
-import { Image } from "@mui/icons-material";
 import TableView from "./TableView";
 
 const UserCards = ({ setId, users, setUsers }) => {
@@ -28,7 +27,6 @@ const UserCards = ({ setId, users, setUsers }) => {
 	const parseDateString = (dobStr) => {
 		if (!dobStr) return null;
 
-		// Example for DD-MM-YYYY format
 		const [day, month, year] = dobStr.split("-");
 		if (!day || !month || !year) return null;
 

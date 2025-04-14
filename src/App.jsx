@@ -2,9 +2,8 @@ import UserForm from "./components/UserForm";
 import UserCards from "./components/UserCards";
 import { Routes, Route } from "react-router";
 import { useState, useEffect } from "react";
-import TableView from "./components/TableView";
 import defaultImg from "./img/defaultImg.jpg";
-import dummyUsers from "./data/Data";
+
 const urlToFile = async (url, filename, mimeType) => {
 	const res = await fetch(url);
 	const blob = await res.blob();
