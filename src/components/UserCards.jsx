@@ -69,9 +69,7 @@ const UserCards = ({ setId, users, setUsers }) => {
 	const handleDelete = (id) => {
 		setUsers((filteredUsers) => filteredUsers.filter((user) => user.id !== id));
 	};
-	useEffect(() => {
-		console.log(showTable);
-	}, [showTable]);
+
 	return (
 		<Container>
 			<Box
