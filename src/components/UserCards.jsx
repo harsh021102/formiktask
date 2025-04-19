@@ -17,6 +17,7 @@ import SearchBar from "./SearchBar";
 import DateFilter from "./DateFilter";
 import View from "../img/View.svg";
 import TableView from "./TableView";
+import SortedTable from "./SortedTable";
 
 const UserCards = ({ setId, users, setUsers }) => {
 	const [gender, setGender] = useState("");
@@ -244,7 +245,7 @@ const UserCards = ({ setId, users, setUsers }) => {
 							</Grid>
 						))
 					) : (
-						<TableView
+						<SortedTable
 							setId={setId}
 							users={filteredUsers()} // Pass filtered users
 							setUsers={setUsers}

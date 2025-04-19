@@ -15,10 +15,50 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import { Button, TableHead } from "@mui/material";
+import { Button, TableHead, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
-
+import { useState } from "react";
+const columns = [
+	{ id: "image", label: "Image", minWidth: "7%" },
+	{ id: "name", label: "Name", minWidth: "130px", color: "pink" },
+	{
+		id: "email",
+		label: "Email",
+		minWidth: "130px",
+		align: "center",
+		color: "red",
+		// format: (value) => value.toLocaleString("en-US"),
+	},
+	{
+		id: "mobile",
+		label: "Mobile Number",
+		minWidth: "140px",
+		align: "right",
+		// format: (value) => value.toLocaleString("en-US"),
+	},
+	{
+		id: "dob",
+		label: "Date of birth",
+		minWidth: "140px",
+		align: "right",
+		// format: (value) => value.toFixed(2),
+	},
+	{
+		id: "gender",
+		label: "Gender",
+		minWidth: "130px",
+		align: "right",
+		// format: (value) => value.toFixed(2),
+	},
+	{
+		id: "actions",
+		label: "Actions",
+		minWidth: "150px",
+		align: "right",
+		// format: (value) => value.toFixed(2),
+	},
+];
 function TablePaginationActions(props) {
 	const theme = useTheme();
 	const { count, page, rowsPerPage, onPageChange } = props;
@@ -40,7 +80,7 @@ function TablePaginationActions(props) {
 	};
 
 	return (
-		<Box sx={{ flexShrink: 0, ml: 2.5 }}>
+		<Box sx={{ flexShrink: 0, ml: 2.5, backgroundColor: "red" }}>
 			<IconButton
 				onClick={handleFirstPageButtonClick}
 				disabled={page === 0}
@@ -89,10 +129,6 @@ TablePaginationActions.propTypes = {
 	rowsPerPage: PropTypes.number.isRequired,
 };
 
-function createData(fname, lname, email, phone, dob, gender) {
-	return { fname, lname, email, phone, dob, gender };
-}
-
 export default function TableView({ setId, users, setUsers, handleDelete }) {
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -112,102 +148,106 @@ export default function TableView({ setId, users, setUsers, handleDelete }) {
 	};
 
 	return (
-		<TableContainer component={Paper}>
-			<Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
-				<TableBody>
-					{(rowsPerPage > 0
-						? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-						: users
-					).map((row) => (
-						<TableRow key={row.ID} sx={{ height: "50px" }}>
-							<TableCell style={{ width: "7%" }}>
-								<ImagePreview imageFile={row.image} tableView={true} />
-							</TableCell>
-							<TableCell style={{ width: "180px" }}>
-								{row.fname + " " + row.lname}
-							</TableCell>
-							<TableCell style={{ width: "180px" }} align="right">
-								{row.email}
-							</TableCell>
-							<TableCell style={{ width: "180px" }} align="right">
-								{row.phone}
-							</TableCell>
-							<TableCell
-								sx={{
-									minWidth: "80px",
-								}}
-								align="right"
-							>
-								{row.dob}
-							</TableCell>
-							<TableCell style={{ width: "180px" }} align="right">
-								{row.gender}
-							</TableCell>
-							<TableCell
-								style={{ width: "150px", height: "50px" }}
-								align="right"
-								sx={{
-									display: "flex",
-									justifyContent: "space-between",
-									alignItems: "center",
-								}}
-							>
-								<Button
-									variant="contained"
-									color="secondary"
-									onClick={() => {
-										navigate("/");
-										setId(row.id);
-										handleDelete(row.id);
-									}}
-									sx={{ width: "48%", height: "70%" }}
+		<Paper sx={{ width: "100%", overflow: "hidden" }}>
+			<TableContainer sx={{ maxHeight: 440 }}>
+				<Table stickyHeader aria-label="sticky table">
+					<TableHead>
+						<TableRow>
+							{columns.map((column) => (
+								<TableCell
+									key={column.id}
+									align={column.align}
+									style={{ minWidth: column.minWidth }}
 								>
-									Delete
-								</Button>
-								<Button
-									variant="contained"
-									color="primary"
-									onClick={() => {
-										navigate("/edit");
-										setId(row.id);
+									{column.label}
+								</TableCell>
+							))}
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{(rowsPerPage > 0
+							? users.slice(
+									page * rowsPerPage,
+									page * rowsPerPage + rowsPerPage
+							  )
+							: users
+						).map((row) => (
+							<TableRow key={row.ID} sx={{ height: "50px" }}>
+								<TableCell style={{ width: "7%" }}>
+									<ImagePreview imageFile={row.image} tableView={true} />
+								</TableCell>
+								<TableCell style={{ width: "180px" }}>
+									{row.fname + " " + row.lname}
+								</TableCell>
+								<TableCell style={{ width: "180px" }} align="right">
+									{row.email}
+								</TableCell>
+								<TableCell style={{ width: "180px" }} align="right">
+									{row.phone}
+								</TableCell>
+								<TableCell
+									sx={{
+										minWidth: "80px",
 									}}
-									sx={{ width: "48%", height: "70%" }}
+									align="right"
 								>
-									Edit
-								</Button>
-							</TableCell>
-						</TableRow>
-					))}
-					{emptyRows > 0 && (
-						<TableRow style={{ height: 53 * emptyRows }}>
-							<TableCell colSpan={6} />
-						</TableRow>
-					)}
-				</TableBody>
-				<TableFooter>
-					<TableRow>
-						<TablePagination
-							rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-							colSpan={7}
-							count={users.length}
-							rowsPerPage={rowsPerPage}
-							page={page}
-							slotProps={{
-								select: {
-									inputProps: {
-										"aria-label": "users per page",
-									},
-									native: true,
-								},
-							}}
-							sx={{ width: "500px" }}
-							onPageChange={handleChangePage}
-							onRowsPerPageChange={handleChangeRowsPerPage}
-							ActionsComponent={TablePaginationActions}
-						/>
-					</TableRow>
-				</TableFooter>
-			</Table>
-		</TableContainer>
+									{row.dob}
+								</TableCell>
+								<TableCell style={{ width: "180px" }} align="right">
+									{row.gender}
+								</TableCell>
+								<TableCell
+									style={{ width: "150px", height: "50px" }}
+									align="right"
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										alignItems: "center",
+									}}
+								>
+									<Button
+										variant="contained"
+										color="secondary"
+										onClick={() => {
+											navigate("/");
+											setId(row.id);
+											handleDelete(row.id);
+										}}
+										sx={{ width: "48%", height: "70%" }}
+									>
+										Delete
+									</Button>
+									<Button
+										variant="contained"
+										color="primary"
+										onClick={() => {
+											navigate("/edit");
+											setId(row.id);
+										}}
+										sx={{ width: "48%", height: "70%" }}
+									>
+										Edit
+									</Button>
+								</TableCell>
+							</TableRow>
+						))}
+						{emptyRows > 0 && (
+							<TableRow style={{ height: 53 * emptyRows }}>
+								<TableCell colSpan={6} />
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+			</TableContainer>
+			<TablePagination
+				rowsPerPageOptions={[10, 25, 100]}
+				component="div"
+				count={users.length}
+				rowsPerPage={rowsPerPage}
+				page={page}
+				onPageChange={handleChangePage}
+				onRowsPerPageChange={handleChangeRowsPerPage}
+			/>
+		</Paper>
 	);
 }
