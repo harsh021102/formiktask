@@ -13,8 +13,7 @@ function App() {
 	const [users, setUsers] = useState([]);
 	const loadDefault = async () => {
 		const file = await urlToFile(defaultImg, "defaultImg.jpg", "image/jpg");
-		console.log(file);
-		// setPreview(defaultImg);
+		// console.log(file);
 		setUsers([
 			{
 				id: 1,
@@ -22,8 +21,8 @@ function App() {
 				lname: "Singh",
 				email: "harsh@gmail.com",
 				password: "H@rsh1601",
-				gender: "male",
-				dob: "16-01-2001",
+				gender: "Male",
+				dob: "2001-01-16",
 				phone: "917393917886",
 				image: file,
 			},
@@ -33,8 +32,8 @@ function App() {
 				lname: "Singh",
 				email: "abhi@gmail.com",
 				password: "H@rsh1601",
-				gender: "male",
-				dob: "16-01-1997",
+				gender: "Male",
+				dob: "2001-09-09",
 				phone: "557393917886",
 				image: file,
 			},
@@ -44,8 +43,8 @@ function App() {
 				lname: "Saxena",
 				email: "anu@gmail.com",
 				password: "H@rsh1601",
-				gender: "female",
-				dob: "11-12-2003",
+				gender: "Female",
+				dob: "1995-12-23",
 				phone: "217393917886",
 				image: file,
 			},
@@ -55,8 +54,8 @@ function App() {
 				lname: "Verma",
 				email: "ak@gmail.com",
 				password: "H@rsh1601",
-				gender: "female",
-				dob: "16-11-2000",
+				gender: "Female",
+				dob: "1997-11-09",
 				phone: "917393917886",
 				image: file,
 			},
@@ -66,8 +65,8 @@ function App() {
 				lname: "Verma",
 				email: "snig@gmail.com",
 				password: "Snig601",
-				gender: "female",
-				dob: "17-11-2000",
+				gender: "Female",
+				dob: "2005-09-20",
 				phone: "908989812345",
 				image: file,
 			},
@@ -77,8 +76,8 @@ function App() {
 				lname: "Verma",
 				email: "shiva@gmail.com",
 				password: "sasrsh1601",
-				gender: "male",
-				dob: "16-11-2005",
+				gender: "Male",
+				dob: "2000-08-04",
 				phone: "227393917890",
 				image: file,
 			},
@@ -96,7 +95,10 @@ function App() {
 				path="/"
 				element={<UserCards setId={setId} users={users} setUsers={setUsers} />}
 			/>
-			<Route path="/new" element={<UserForm users={users} />} />
+			<Route
+				path="/new"
+				element={<UserForm users={users} setUsers={setUsers} />}
+			/>
 			<Route
 				path="/edit"
 				element={<UserForm users={users} id={id} setUsers={setUsers} />}

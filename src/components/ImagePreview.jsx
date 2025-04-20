@@ -13,9 +13,6 @@ const ImagePreview = ({ imageFile, tableView }) => {
 			reader.readAsDataURL(imageFile);
 		}
 	}, [imageFile]);
-	useEffect(() => {
-		console.log(tableView);
-	});
 	return imageFile ? (
 		<Box
 			component="img"

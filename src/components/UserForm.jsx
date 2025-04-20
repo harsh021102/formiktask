@@ -74,7 +74,7 @@ const UserForm = ({ users, id, setUsers }) => {
 	});
 	const loadDefault = async () => {
 		const file = await urlToFile(defaultImg, "defaultImg.jpg", "image/jpg");
-		console.log(file);
+		// console.log(file);
 		setPreview(defaultImg);
 		setInitialValues((prev) => ({
 			...prev,
@@ -82,8 +82,11 @@ const UserForm = ({ users, id, setUsers }) => {
 		}));
 	};
 	useEffect(() => {
-		loadDefault();
-	}, []);
+		// console.log(users[users.length - 1].dob);
+		if (!id) {
+			loadDefault();
+		}
+	}, [id]);
 
 	useEffect(() => {
 		if (id) {
@@ -100,10 +103,12 @@ const UserForm = ({ users, id, setUsers }) => {
 	}, [id, users]);
 
 	useEffect(() => {
-		console.log("Initial Values: ", initialValues);
+		// console.log("Initial Values: ", initialValues);
 	}, [initialValues]);
+
 	const onSubmit = (values) => {
-		console.log(id, values);
+		// console.log(id, values);
+		// console.log("Submitted:", values.dob);
 
 		if (id) {
 			setUsers((users) =>
@@ -113,6 +118,7 @@ const UserForm = ({ users, id, setUsers }) => {
 			const newUser = { ...values, id: users.length + 1 };
 			users.push(newUser);
 		}
+		// console.log(users);
 		navigate("/");
 	};
 	const togglePasswordVisibility = () => {
@@ -120,7 +126,7 @@ const UserForm = ({ users, id, setUsers }) => {
 	};
 	const handleFileChange = (event) => {
 		const file = event.target.files[0];
-		console.log(file);
+		// console.log(file);
 
 		if (file) {
 			const reader = new FileReader();
@@ -183,12 +189,10 @@ const UserForm = ({ users, id, setUsers }) => {
 												type="file"
 												onChange={(event) => {
 													const file = event.currentTarget.files[0];
-													form.setFieldValue("image", file);
-													setInitialValues((prev) => ({
-														...prev,
-														image: file,
-													}));
-													handleFileChange(event);
+													if (file) {
+														form.setFieldValue("image", file);
+														handleFileChange(event);
+													}
 												}}
 											/>
 											<label htmlFor="file-upload">
@@ -326,9 +330,9 @@ const UserForm = ({ users, id, setUsers }) => {
 												}
 												helperText={form.touched.gender && form.errors.gender}
 											>
-												<MenuItem value="male">Male</MenuItem>
-												<MenuItem value="female">Female</MenuItem>
-												<MenuItem value="other">Other</MenuItem>
+												<MenuItem value="Male">Male</MenuItem>
+												<MenuItem value="Female">Female</MenuItem>
+												<MenuItem value="Other">Other</MenuItem>
 											</TextField>
 										);
 									}}

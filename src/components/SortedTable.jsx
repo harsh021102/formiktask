@@ -13,19 +13,57 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
+
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
-
+import * as Yup from "yup";
+import { Field, Form, Formik } from "formik";
+import PhoneInput from "react-phone-input-2";
+const FILE_SIZE = 1024 * 1024 * 5;
+const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
+const inlineValidationSchema = Yup.object({
+	fname: Yup.string().required("Required!"),
+	email: Yup.string().email("Invalid email format").required("Required!"),
+	// image: Yup.mixed()
+	// 	.required("Image is required")
+	// 	.test(
+	// 		"fileSize",
+	// 		"File too large. Please upload image of size less than 5MB",
+	// 		(value) => {
+	// 			return value && value.size <= FILE_SIZE;
+	// 		}
+	// 	)
+	// 	.test(
+	// 		"fileFormat",
+	// 		"Unsupported format. Please upload jpeg, jpg or png format",
+	// 		(value) => {
+	// 			return value && SUPPORTED_FORMATS.includes(value.type);
+	// 		}
+	// 	),
+	password: Yup.string()
+		.matches(
+			/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+			"Password must be at least 8 characters long, include at least one uppercase letter, one number, and one special character"
+		)
+		.required("Password is required"),
+	dob: Yup.date()
+		.max(
+			new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+			"You must be at least 18 years old"
+		)
+		.required("Date of Birth is required"),
+	gender: Yup.string().required("Gender is required"),
+});
 function descendingComparator(a, b, orderBy) {
+	if (orderBy === "dob") {
+		return new Date(b.dob) - new Date(a.dob);
+	}
 	if (b[orderBy] < a[orderBy]) {
 		return -1;
 	}
@@ -43,10 +81,16 @@ function getComparator(order, orderBy) {
 
 const headCells = [
 	{
-		id: "name",
+		id: "fname",
 		numeric: false,
 		disablePadding: true,
-		label: "Name",
+		label: "First Name",
+	},
+	{
+		id: "lname",
+		numeric: false,
+		disablePadding: true,
+		label: "Last Name",
 	},
 	{
 		id: "email",
@@ -55,7 +99,7 @@ const headCells = [
 		label: "Email",
 	},
 	{
-		id: "mobile",
+		id: "phone",
 		numeric: true,
 		disablePadding: false,
 		label: "Mobile number",
@@ -88,24 +132,14 @@ function EnhancedTableHead(props) {
 	};
 
 	return (
-		<TableHead sx={{ minWidth: "880px", backgroundColor: "red" }}>
+		<TableHead
+			sx={{ minWidth: "880px", backgroundColor: "rgba(211, 204, 207, 0.8)" }}
+		>
 			<TableRow>
-				{/* <TableCell padding="checkbox">
-					<Checkbox
-                    color="primary"
-                    indeterminate={numSelected > 0 && numSelected < rowCount}
-                    checked={rowCount > 0 && numSelected === rowCount}
-                    onChange={onSelectAllClick}
-                    inputProps={{
-                        "aria-label": "select all desserts",
-						}}
-                        />
-                        </TableCell> */}
 				<TableCell align="center">Image</TableCell>
 				{headCells.map((headCell) => (
 					<TableCell
 						key={headCell.id}
-						// align={headCell.numeric ? "right" : "left"}
 						align="center"
 						padding={headCell.disablePadding ? "none" : "normal"}
 						sortDirection={orderBy === headCell.id ? order : false}
@@ -157,38 +191,11 @@ function EnhancedTableToolbar(props) {
 				},
 			]}
 		>
-			{numSelected > 0 ? (
-				<Typography
-					sx={{ flex: "1 1 100%" }}
-					color="inherit"
-					variant="subtitle1"
-					component="div"
-				>
-					{numSelected} selected
-				</Typography>
-			) : (
-				<Typography
-					sx={{ flex: "1 1 100%" }}
-					variant="h6"
-					id="tableTitle"
-					component="div"
-				>
-					Nutrition
-				</Typography>
-			)}
-			{numSelected > 0 ? (
-				<Tooltip title="Delete">
-					<IconButton>
-						<DeleteIcon />
-					</IconButton>
-				</Tooltip>
-			) : (
-				<Tooltip title="Filter list">
-					<IconButton>
-						<FilterListIcon />
-					</IconButton>
-				</Tooltip>
-			)}
+			{/* <Tooltip title="Filter list">
+				<IconButton>
+					<FilterListIcon />
+				</IconButton>
+			</Tooltip> */}
 		</Toolbar>
 	);
 }
@@ -199,11 +206,24 @@ EnhancedTableToolbar.propTypes = {
 
 export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 	const [order, setOrder] = React.useState("asc");
-	const [orderBy, setOrderBy] = React.useState("calories");
+	const [orderBy, setOrderBy] = React.useState("fname");
 	const [selected, setSelected] = React.useState([]);
 	const [page, setPage] = React.useState(0);
-	const [dense, setDense] = React.useState(false);
+	const [dense, setDense] = React.useState(true);
 	const [rowsPerPage, setRowsPerPage] = React.useState(5);
+	const [editRowId, setEditRowId] = React.useState(null);
+	const [editFormData, setEditFormData] = React.useState({});
+	const [fieldErrors, setFieldErrors] = React.useState({});
+	const [initialValues, setInitialValues] = React.useState({
+		fname: "",
+		lname: "",
+		email: "",
+		password: "",
+		gender: "",
+		dob: "",
+		phone: "",
+		image: null,
+	});
 	const navigate = useNavigate();
 
 	const handleRequestSort = (event, property) => {
@@ -264,11 +284,12 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 				.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
 		[order, orderBy, page, rowsPerPage]
 	);
-
+	const onSubmit = (field, value) => {
+		setEditFormData((prev) => ({ ...prev, [field]: value }));
+	};
 	return (
-		<Box sx={{ width: "100%" }}>
+		<Box sx={{ width: "100%", height: "60%" }}>
 			<Paper sx={{ width: "100%", mb: 2 }}>
-				{/* <EnhancedTableToolbar numSelected={selected.length} /> */}
 				<TableContainer>
 					<Table
 						sx={{ minWidth: 750 }}
@@ -287,7 +308,7 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 							{visibleRows.map((row, index) => {
 								const isItemSelected = selected.includes(row.id);
 								const labelId = `enhanced-table-checkbox-${index}`;
-
+								const isEditing = row.id === editRowId;
 								return (
 									<TableRow
 										hover
@@ -299,72 +320,201 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 										selected={isItemSelected}
 										sx={{ cursor: "pointer" }}
 									>
-										{/* <TableCell padding="checkbox">
-											<Checkbox
-												color="primary"
-												checked={isItemSelected}
-												slotProps={{
-													"aria-labelledby": labelId,
-												}}
-											/>
-										</TableCell> */}
 										<TableCell style={{ width: "7%" }}>
 											<ImagePreview imageFile={row.image} tableView={true} />
 										</TableCell>
+										{isEditing ? (
+											<Formik
+												sx={{ display: "flex" }}
+												initialValues={editFormData}
+												validationSchema={inlineValidationSchema}
+												onSubmit={(values) => {
+													const updatedUsers = users.map((user) =>
+														user.id === editRowId
+															? { ...user, ...values }
+															: user
+													);
+													setUsers(updatedUsers);
+													setEditRowId(null);
+												}}
+												enableReinitialize
+											>
+												{({
+													handleSubmit,
+													handleChange,
+													handleBlur,
+													values,
+													errors,
+													touched,
+													setFieldValue,
+												}) => (
+													<>
+														<TableCell>
+															<TextField
+																name="fname"
+																label="First Name"
+																variant="standard"
+																fullWidth
+																value={values.fname}
+																onChange={handleChange}
+																error={!!errors.fname && touched.fname}
+																helperText={touched.fname && errors.fname}
+															/>
+														</TableCell>
+														<TableCell>
+															<TextField
+																name="lname"
+																label="Last Name"
+																variant="standard"
+																fullWidth
+																value={values.lname}
+																onChange={handleChange}
+																error={!!errors.lname && touched.lname}
+																helperText={touched.lname && errors.lname}
+															/>
+														</TableCell>
+														<TableCell>
+															<TextField
+																name="email"
+																label="Email"
+																variant="standard"
+																fullWidth
+																value={values.email}
+																onChange={handleChange}
+																error={!!errors.email && touched.email}
+																helperText={touched.email && errors.email}
+															/>
+														</TableCell>
+														<TableCell>
+															<PhoneInput
+																country={"in"}
+																enableSearch={true}
+																value={values.phone}
+																fullWidth
+																onBlur={handleBlur}
+																variant="standard"
+																onChange={(phone) =>
+																	setFieldValue("phone", phone)
+																}
+																inputProps={{
+																	id: "phone",
+																	name: "phone",
+																	autoComplete: "tel",
+																}}
+																inputStyle={{
+																	// width: "100%",
+																	height: "56px",
+																	borderRadius: "1px",
+																	borderColor:
+																		touched.phone && errors.phone
+																			? "red"
+																			: "#ccc",
+																}}
+															/>
+														</TableCell>
+														<TableCell>
+															<TextField
+																fullWidth
+																label="Date of Birth"
+																type="date"
+																variant="standard"
+																InputLabelProps={{ shrink: true }}
+																required
+																error={!!errors.dob && touched.dob}
+																helperText={touched.dob && errors.dob}
+															/>
+														</TableCell>
+														{/* Add more fields similarly */}
+													</>
+												)}
+											</Formik>
+										) : (
+											<>
+												<TableCell>{row.fname}</TableCell>
+												<TableCell>{row.lname}</TableCell>
+												<TableCell align="center">{row.email}</TableCell>
+												<TableCell align="center">{row.phone}</TableCell>
+												<TableCell align="center">{row.dob}</TableCell>
+												<TableCell align="center">{row.gender}</TableCell>
+											</>
+										)}
 										<TableCell
-											component="th"
-											id={labelId}
-											scope="row"
-											padding="none"
-											minWidth="180px"
-										>
-											{row.fname + " " + row.lname}
-										</TableCell>
-										<TableCell align="center">{row.email}</TableCell>
-										<TableCell style={{ width: "180px" }} align="center">
-											{row.phone}
-										</TableCell>
-										<TableCell style={{ width: "180px" }} align="center">
-											{row.dob}
-										</TableCell>
-										<TableCell
-											style={{ minWidth: "60px", backgroundColor: "pink" }}
-											align="center"
-										>
-											{row.gender}
-										</TableCell>
-										<TableCell
-											style={{ width: "150px", height: "50px" }}
+											// style={{ width: "150px", height: "50px" }}
 											align="right"
 											sx={{
 												display: "flex",
-												justifyContent: "space-between",
+												justifyContent: "center",
 												alignItems: "center",
+												gap: 1,
 											}}
 										>
-											<Button
-												variant="contained"
-												color="secondary"
-												onClick={() => {
-													navigate("/");
-													setId(row.id);
-													handleDelete(row.id);
-												}}
-												sx={{ width: "48%", height: "70%" }}
-											>
-												Delete
-											</Button>
-											<Button
-												variant="contained"
-												color="primary"
-												onClick={() => {
-													navigate("/edit");
-													setId(row.id);
-												}}
-												sx={{ width: "48%", height: "70%" }}
-											>
-												Edit
-											</Button>
+											{editRowId === row.id ? (
+												<>
+													<Button
+														variant="contained"
+														color="success"
+														onClick={async () => {
+															try {
+																await inlineValidationSchema.validate(
+																	editFormData,
+																	{ abortEarly: false }
+																);
+
+																const updatedUsers = users.map((user) =>
+																	user.id === editRowId ? editFormData : user
+																);
+																setUsers(updatedUsers);
+																setEditRowId(null);
+																setFieldErrors({});
+															} catch (err) {
+																if (err instanceof Yup.ValidationError) {
+																	const errors = {};
+																	err.inner.forEach((e) => {
+																		errors[e.path] = e.message;
+																	});
+																	setFieldErrors(errors);
+																}
+															}
+														}}
+													>
+														Save
+													</Button>
+													<Button
+														variant="contained"
+														color="inherit"
+														onClick={() => setEditRowId(null)}
+														sx={{ width: "48%", height: "70%" }}
+													>
+														Cancel
+													</Button>
+												</>
+											) : (
+												<>
+													<Button
+														variant="contained"
+														color="secondary"
+														onClick={() => {
+															navigate("/");
+															setId(row.id);
+															handleDelete(row.id);
+														}}
+														sx={{ width: "48%", height: "70%" }}
+													>
+														Delete
+													</Button>
+													<Button
+														variant="contained"
+														color="primary"
+														onClick={() => {
+															setEditRowId(row.id);
+															setEditFormData({ ...row });
+														}}
+														sx={{ width: "48%", height: "70%" }}
+													>
+														Edit
+													</Button>
+												</>
+											)}
 										</TableCell>
 									</TableRow>
 								);
@@ -391,10 +541,6 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 					onRowsPerPageChange={handleChangeRowsPerPage}
 				/>
 			</Paper>
-			<FormControlLabel
-				control={<Switch checked={dense} onChange={handleChangeDense} />}
-				label="Dense padding"
-			/>
 		</Box>
 	);
 }

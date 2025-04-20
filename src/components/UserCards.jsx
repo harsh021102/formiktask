@@ -11,6 +11,7 @@ import {
 	MenuItem,
 	FormControl,
 } from "@mui/material";
+import * as Yup from "yup";
 import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
 import SearchBar from "./SearchBar";
@@ -28,8 +29,9 @@ const UserCards = ({ setId, users, setUsers }) => {
 	const parseDateString = (dobStr) => {
 		if (!dobStr) return null;
 
-		const [day, month, year] = dobStr.split("-");
+		const [year, month, day] = dobStr.split("-");
 		if (!day || !month || !year) return null;
+		// console.log("Parsed Date: ", new Date(`${year}-${month}-${day}`));
 
 		return new Date(`${year}-${month}-${day}`);
 	};
@@ -40,7 +42,7 @@ const UserCards = ({ setId, users, setUsers }) => {
 			const dob = parseDateString(user.dob);
 
 			if (!dob || isNaN(dob)) {
-				console.warn("Invalid DOB:", user.dob);
+				console.warn("Invalid DOB:", user.dob, user.fname);
 				return false;
 			}
 
