@@ -11,19 +11,12 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { Button, TextField } from "@mui/material";
+import { Button, MenuItem, TextField } from "@mui/material";
 import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
 import * as Yup from "yup";
-import { Field, Form, Formik } from "formik";
 import PhoneInput from "react-phone-input-2";
 const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
@@ -219,7 +212,7 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 		lname: "",
 		email: "",
 		password: "",
-		gender: "",
+		gender: "Male",
 		dob: "",
 		phone: "",
 		image: null,
@@ -282,11 +275,18 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 			[...users]
 				.sort(getComparator(order, orderBy))
 				.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-		[order, orderBy, page, rowsPerPage]
+		[order, orderBy, page, rowsPerPage, users, page, rowsPerPage]
 	);
-	const onSubmit = (field, value) => {
-		setEditFormData((prev) => ({ ...prev, [field]: value }));
+	const handleEdit = (row) => {
+		const index = users.findIndex((user) => user.id === row.id);
+		const targetPage = Math.floor(index / rowsPerPage);
+		setPage(targetPage); // This ensures the row appears on screen
+		setEditRowId(row.id);
+		setEditFormData({ ...row });
 	};
+	React.useEffect(() => {
+		console.log(editRowId);
+	}, [editRowId]);
 	return (
 		<Box sx={{ width: "100%", height: "60%" }}>
 			<Paper sx={{ width: "100%", mb: 2 }}>
@@ -307,178 +307,133 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 						<TableBody>
 							{visibleRows.map((row, index) => {
 								const isItemSelected = selected.includes(row.id);
-								const labelId = `enhanced-table-checkbox-${index}`;
 								const isEditing = row.id === editRowId;
-								return (
-									<TableRow
-										hover
-										onClick={(event) => handleClick(event, row.id)}
-										role="checkbox"
-										aria-checked={isItemSelected}
-										tabIndex={-1}
-										key={row.id}
-										selected={isItemSelected}
-										sx={{ cursor: "pointer" }}
-									>
-										<TableCell style={{ width: "7%" }}>
-											<ImagePreview imageFile={row.image} tableView={true} />
-										</TableCell>
-										{isEditing ? (
-											<Formik
-												sx={{ display: "flex" }}
-												initialValues={editFormData}
-												validationSchema={inlineValidationSchema}
-												onSubmit={(values) => {
-													const updatedUsers = users.map((user) =>
-														user.id === editRowId
-															? { ...user, ...values }
-															: user
-													);
-													setUsers(updatedUsers);
-													setEditRowId(null);
-												}}
-												enableReinitialize
-											>
-												{({
-													handleSubmit,
-													handleChange,
-													handleBlur,
-													values,
-													errors,
-													touched,
-													setFieldValue,
-												}) => (
-													<>
-														<TableCell>
-															<TextField
-																name="fname"
-																label="First Name"
-																variant="standard"
-																fullWidth
-																value={values.fname}
-																onChange={handleChange}
-																error={!!errors.fname && touched.fname}
-																helperText={touched.fname && errors.fname}
-															/>
-														</TableCell>
-														<TableCell>
-															<TextField
-																name="lname"
-																label="Last Name"
-																variant="standard"
-																fullWidth
-																value={values.lname}
-																onChange={handleChange}
-																error={!!errors.lname && touched.lname}
-																helperText={touched.lname && errors.lname}
-															/>
-														</TableCell>
-														<TableCell>
-															<TextField
-																name="email"
-																label="Email"
-																variant="standard"
-																fullWidth
-																value={values.email}
-																onChange={handleChange}
-																error={!!errors.email && touched.email}
-																helperText={touched.email && errors.email}
-															/>
-														</TableCell>
-														<TableCell>
-															<PhoneInput
-																country={"in"}
-																enableSearch={true}
-																value={values.phone}
-																fullWidth
-																onBlur={handleBlur}
-																variant="standard"
-																onChange={(phone) =>
-																	setFieldValue("phone", phone)
-																}
-																inputProps={{
-																	id: "phone",
-																	name: "phone",
-																	autoComplete: "tel",
-																}}
-																inputStyle={{
-																	// width: "100%",
-																	height: "56px",
-																	borderRadius: "1px",
-																	borderColor:
-																		touched.phone && errors.phone
-																			? "red"
-																			: "#ccc",
-																}}
-															/>
-														</TableCell>
-														<TableCell>
-															<TextField
-																fullWidth
-																label="Date of Birth"
-																type="date"
-																variant="standard"
-																InputLabelProps={{ shrink: true }}
-																required
-																error={!!errors.dob && touched.dob}
-																helperText={touched.dob && errors.dob}
-															/>
-														</TableCell>
-														{/* Add more fields similarly */}
-													</>
-												)}
-											</Formik>
-										) : (
-											<>
-												<TableCell>{row.fname}</TableCell>
-												<TableCell>{row.lname}</TableCell>
-												<TableCell align="center">{row.email}</TableCell>
-												<TableCell align="center">{row.phone}</TableCell>
-												<TableCell align="center">{row.dob}</TableCell>
-												<TableCell align="center">{row.gender}</TableCell>
-											</>
-										)}
-										<TableCell
-											// style={{ width: "150px", height: "50px" }}
-											align="right"
-											sx={{
-												display: "flex",
-												justifyContent: "center",
-												alignItems: "center",
-												gap: 1,
-											}}
-										>
-											{editRowId === row.id ? (
-												<>
-													<Button
-														variant="contained"
-														color="success"
-														onClick={async () => {
-															try {
-																await inlineValidationSchema.validate(
-																	editFormData,
-																	{ abortEarly: false }
-																);
 
-																const updatedUsers = users.map((user) =>
-																	user.id === editRowId ? editFormData : user
-																);
-																setUsers(updatedUsers);
-																setEditRowId(null);
-																setFieldErrors({});
-															} catch (err) {
-																if (err instanceof Yup.ValidationError) {
-																	const errors = {};
-																	err.inner.forEach((e) => {
-																		errors[e.path] = e.message;
-																	});
-																	setFieldErrors(errors);
-																}
-															}
+								return isEditing ? (
+									<Formik
+										key={`edit-${row.id}`}
+										initialValues={row}
+										validationSchema={inlineValidationSchema}
+										onSubmit={(values) => {
+											const updatedUsers = users.map((user) =>
+												user.id === editRowId ? { ...user, ...values } : user
+											);
+											setUsers(updatedUsers);
+											setTimeout(() => setEditRowId(null), 0);
+										}}
+										enableReinitialize
+									>
+										{({
+											handleSubmit,
+											handleChange,
+											handleBlur,
+											values,
+											errors,
+											touched,
+											setFieldValue,
+										}) => (
+											<TableRow
+												hover
+												role="checkbox"
+												aria-checked={isItemSelected}
+												tabIndex={-1}
+												selected={isItemSelected}
+											>
+												<TableCell style={{ width: "7%" }}>
+													<ImagePreview
+														imageFile={row.image}
+														tableView={true}
+													/>
+												</TableCell>
+												<TableCell>
+													<TextField
+														name="fname"
+														label="First Name"
+														variant="standard"
+														fullWidth
+														value={values.fname}
+														onChange={handleChange}
+														error={!!errors.fname && touched.fname}
+														helperText={touched.fname && errors.fname}
+													/>
+												</TableCell>
+												<TableCell>
+													<TextField
+														name="lname"
+														label="Last Name"
+														variant="standard"
+														fullWidth
+														value={values.lname}
+														onChange={handleChange}
+														error={!!errors.lname && touched.lname}
+														helperText={touched.lname && errors.lname}
+													/>
+												</TableCell>
+												<TableCell>
+													<TextField
+														name="email"
+														label="Email"
+														variant="standard"
+														fullWidth
+														value={values.email}
+														onChange={handleChange}
+														error={!!errors.email && touched.email}
+														helperText={touched.email && errors.email}
+													/>
+												</TableCell>
+												<TableCell>
+													<PhoneInput
+														country={"in"}
+														enableSearch
+														value={values.phone}
+														onBlur={handleBlur}
+														onChange={(phone) => setFieldValue("phone", phone)}
+														inputProps={{
+															id: "phone",
+															name: "phone",
+															autoComplete: "tel",
 														}}
+														inputStyle={{
+															height: "40px",
+															width: "180px",
+															borderRadius: "1px",
+															borderColor:
+																touched.phone && errors.phone ? "red" : "#ccc",
+														}}
+													/>
+												</TableCell>
+												<TableCell>
+													<TextField
+														fullWidth
+														label="Date of Birth"
+														type="date"
+														variant="standard"
+														name="dob"
+														value={values.dob}
+														onChange={handleChange}
+														InputLabelProps={{ shrink: true }}
+														error={!!errors.dob && touched.dob}
+														helperText={touched.dob && errors.dob}
+													/>
+												</TableCell>
+												<TableCell>
+													<TextField
+														select
+														fullWidth
+														label="Gender"
+														variant="standard"
+														name="gender"
+														value={values.gender}
+														onChange={handleChange}
+														error={!!errors.gender && touched.gender}
+														helperText={touched.gender && errors.gender}
 													>
-														Save
-													</Button>
+														<MenuItem value="Male">Male</MenuItem>
+														<MenuItem value="Female">Female</MenuItem>
+														<MenuItem value="Other">Other</MenuItem>
+													</TextField>
+												</TableCell>
+												<TableCell align="right" sx={{ display: "flex" }}>
 													<Button
 														variant="contained"
 														color="inherit"
@@ -487,34 +442,65 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 													>
 														Cancel
 													</Button>
-												</>
-											) : (
-												<>
 													<Button
 														variant="contained"
-														color="secondary"
-														onClick={() => {
-															navigate("/");
-															setId(row.id);
-															handleDelete(row.id);
-														}}
-														sx={{ width: "48%", height: "70%" }}
+														color="success"
+														onClick={handleSubmit}
+														sx={{ width: "48%", height: "70%", mr: 1 }}
 													>
-														Delete
+														Save
 													</Button>
-													<Button
-														variant="contained"
-														color="primary"
-														onClick={() => {
-															setEditRowId(row.id);
-															setEditFormData({ ...row });
-														}}
-														sx={{ width: "48%", height: "70%" }}
-													>
-														Edit
-													</Button>
-												</>
-											)}
+												</TableCell>
+											</TableRow>
+										)}
+									</Formik>
+								) : (
+									<TableRow
+										key={row.id}
+										hover
+										onClick={(event) => handleClick(event, row.id)}
+										role="checkbox"
+										aria-checked={isItemSelected}
+										tabIndex={-1}
+										selected={isItemSelected}
+										sx={{ cursor: "pointer" }}
+									>
+										<TableCell style={{ width: "7%" }}>
+											<ImagePreview imageFile={row.image} tableView={true} />
+										</TableCell>
+										<TableCell>{row.fname}</TableCell>
+										<TableCell>{row.lname}</TableCell>
+										<TableCell align="center">{row.email}</TableCell>
+										<TableCell align="center">{row.phone}</TableCell>
+										<TableCell align="center">{row.dob}</TableCell>
+										<TableCell align="center">{row.gender}</TableCell>
+										<TableCell
+											align="right"
+											sx={{ display: "flex", justifyContent: "center", gap: 1 }}
+										>
+											<Button
+												variant="contained"
+												color="secondary"
+												onClick={() => {
+													navigate("/");
+													setId(row.id);
+													handleDelete(row.id);
+												}}
+												sx={{ width: "48%", height: "70%" }}
+											>
+												Delete
+											</Button>
+											<Button
+												variant="contained"
+												color="primary"
+												onClick={() => {
+													setEditRowId(row.id);
+													setEditFormData({ ...row });
+												}}
+												sx={{ width: "48%", height: "70%" }}
+											>
+												Edit
+											</Button>
 										</TableCell>
 									</TableRow>
 								);
