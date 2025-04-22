@@ -18,6 +18,7 @@ import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
 import * as Yup from "yup";
 import PhoneInput from "react-phone-input-2";
+import { Formik } from "formik";
 const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const inlineValidationSchema = Yup.object({
@@ -183,13 +184,7 @@ function EnhancedTableToolbar(props) {
 						),
 				},
 			]}
-		>
-			{/* <Tooltip title="Filter list">
-				<IconButton>
-					<FilterListIcon />
-				</IconButton>
-			</Tooltip> */}
-		</Toolbar>
+		></Toolbar>
 	);
 }
 
@@ -266,7 +261,6 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 		setDense(event.target.checked);
 	};
 
-	// Avoid a layout jump when reaching the last page with empty rows.
 	const emptyRows =
 		page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
