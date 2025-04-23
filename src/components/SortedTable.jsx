@@ -18,28 +18,30 @@ import { useNavigate } from "react-router";
 import ImagePreview from "./ImagePreview";
 import * as Yup from "yup";
 import PhoneInput from "react-phone-input-2";
+import { IconButton, Typography } from "@mui/material";
+import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { Formik } from "formik";
 const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const inlineValidationSchema = Yup.object({
 	fname: Yup.string().required("Required!"),
 	email: Yup.string().email("Invalid email format").required("Required!"),
-	// image: Yup.mixed()
-	// 	.required("Image is required")
-	// 	.test(
-	// 		"fileSize",
-	// 		"File too large. Please upload image of size less than 5MB",
-	// 		(value) => {
-	// 			return value && value.size <= FILE_SIZE;
-	// 		}
-	// 	)
-	// 	.test(
-	// 		"fileFormat",
-	// 		"Unsupported format. Please upload jpeg, jpg or png format",
-	// 		(value) => {
-	// 			return value && SUPPORTED_FORMATS.includes(value.type);
-	// 		}
-	// 	),
+	image: Yup.mixed()
+		.required("Image is required")
+		.test(
+			"fileSize",
+			"File too large. Please upload image of size less than 5MB",
+			(value) => {
+				return value && value.size <= FILE_SIZE;
+			}
+		)
+		.test(
+			"fileFormat",
+			"Unsupported format. Please upload jpeg, jpg or png format",
+			(value) => {
+				return value && SUPPORTED_FORMATS.includes(value.type);
+			}
+		),
 	password: Yup.string()
 		.matches(
 			/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
@@ -112,6 +114,46 @@ const headCells = [
 	},
 ];
 
+const CustomTablePaginationActions = ({
+	count,
+	page,
+	rowsPerPage,
+	onPageChange,
+}) => {
+	const totalPages = Math.ceil(count / rowsPerPage);
+
+	const handleBackButtonClick = (event) => {
+		onPageChange(event, page - 1);
+	};
+
+	const handleNextButtonClick = (event) => {
+		onPageChange(event, page + 1);
+	};
+
+	return (
+		<Box sx={{ flexShrink: 0, ml: 2.5, display: "flex", alignItems: "center" }}>
+			<IconButton
+				onClick={handleBackButtonClick}
+				disabled={page === 0}
+				aria-label="previous page"
+			>
+				<KeyboardArrowLeft />
+			</IconButton>
+
+			<Typography variant="body2" sx={{ mx: 1, fontWeight: 500 }}>
+				Page {page + 1} of {totalPages}
+			</Typography>
+
+			<IconButton
+				onClick={handleNextButtonClick}
+				disabled={page >= totalPages - 1}
+				aria-label="next page"
+			>
+				<KeyboardArrowRight />
+			</IconButton>
+		</Box>
+	);
+};
 function EnhancedTableHead(props) {
 	const {
 		onSelectAllClick,
@@ -333,12 +375,90 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 												tabIndex={-1}
 												selected={isItemSelected}
 											>
-												<TableCell style={{ width: "7%" }}>
-													<ImagePreview
-														imageFile={row.image}
-														tableView={true}
-													/>
+												<TableCell
+													style={{ width: "7%", position: "relative" }}
+												>
+													<Box
+														position="relative"
+														width="50px"
+														height="50px"
+														sx={{
+															borderRadius: "50%",
+															overflow: "hidden",
+															cursor: "pointer",
+															"&:hover .upload-overlay": {
+																opacity: 1,
+															},
+														}}
+													>
+														{/* Profile Image Preview */}
+														{values.image ? (
+															<img
+																src={
+																	typeof values.image === "string"
+																		? values.image
+																		: URL.createObjectURL(values.image)
+																}
+																alt="Profile"
+																style={{
+																	width: "100%",
+																	height: "100%",
+																	objectFit: "cover",
+																}}
+															/>
+														) : (
+															<Box
+																width="100%"
+																height="100%"
+																display="flex"
+																alignItems="center"
+																justifyContent="center"
+																bgcolor="#f0f0f0"
+															>
+																No Image
+															</Box>
+														)}
+
+														{/* Hidden Input */}
+														<input
+															accept="image/*"
+															id="file-upload"
+															type="file"
+															style={{ display: "none" }}
+															onChange={(event) => {
+																const file = event.currentTarget.files[0];
+																if (file) {
+																	setFieldValue("image", file);
+																}
+															}}
+														/>
+														<label htmlFor="file-upload">
+															<Box
+																className="upload-overlay"
+																position="absolute"
+																top={0}
+																left={0}
+																width="100%"
+																height="100%"
+																display="flex"
+																alignItems="center"
+																justifyContent="center"
+																sx={{
+																	backgroundColor: "rgba(0, 0, 0, 0.5)",
+																	color: "#fff",
+																	fontSize: "0.7rem",
+																	fontWeight: "bold",
+																	opacity: 0,
+																	transition: "opacity 0.3s ease",
+																	cursor: "pointer",
+																}}
+															>
+																Edit
+															</Box>
+														</label>
+													</Box>
 												</TableCell>
+
 												<TableCell>
 													<TextField
 														name="fname"
@@ -519,6 +639,7 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 					page={page}
 					onPageChange={handleChangePage}
 					onRowsPerPageChange={handleChangeRowsPerPage}
+					ActionsComponent={CustomTablePaginationActions}
 				/>
 			</Paper>
 		</Box>
