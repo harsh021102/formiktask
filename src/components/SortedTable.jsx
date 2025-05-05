@@ -21,6 +21,7 @@ import PhoneInput from "react-phone-input-2";
 import { IconButton, Typography } from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { Formik } from "formik";
+import { useState } from "react";
 const FILE_SIZE = 1024 * 1024 * 5;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 const inlineValidationSchema = Yup.object({
@@ -254,6 +255,9 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 		phone: "",
 		image: null,
 	});
+	const [editRowIds, setEditRowIds] = useState([]);
+	const [editedRowsData, setEditedRowsData] = useState({});
+
 	const navigate = useNavigate();
 
 	const handleRequestSort = (event, property) => {
@@ -311,21 +315,49 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 			[...users]
 				.sort(getComparator(order, orderBy))
 				.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-		[order, orderBy, page, rowsPerPage, users, page, rowsPerPage]
+		[order, orderBy, users, page, rowsPerPage]
 	);
-	const handleEdit = (row) => {
-		const index = users.findIndex((user) => user.id === row.id);
-		const targetPage = Math.floor(index / rowsPerPage);
-		setPage(targetPage); // This ensures the row appears on screen
-		setEditRowId(row.id);
-		setEditFormData({ ...row });
+	const handleBulkSave = () => {
+		const updatedUsers = users.map((user) =>
+			editRowIds.includes(user.id)
+				? { ...user, ...editedRowsData[user.id] }
+				: user
+		);
+		setUsers(updatedUsers);
+		setEditRowIds([]);
+		setEditedRowsData({});
 	};
-	React.useEffect(() => {
-		console.log(editRowId);
-	}, [editRowId]);
+	const handleBulkEdit = () => {
+		const ids = users.map((u) => u.id);
+		const data = users.reduce((acc, user) => {
+			acc[user.id] = { ...user };
+			return acc;
+		}, {});
+		setEditRowIds(ids);
+		setEditedRowsData(data);
+	};
 	return (
 		<Box sx={{ width: "100%", height: "60%" }}>
 			<Paper sx={{ width: "100%", mb: 2 }}>
+				{editRowIds.length > 0 && (
+					<Button
+						variant="contained"
+						color="success"
+						onClick={handleBulkSave}
+						sx={{ m: 2 }}
+					>
+						Save All
+					</Button>
+				)}
+				<Button
+					variant="outlined"
+					color="primary"
+					onClick={handleBulkEdit}
+					sx={{ m: 2 }}
+					disabled={editRowIds.length > 0}
+				>
+					Bulk Edit
+				</Button>
 				<TableContainer>
 					<Table
 						sx={{ minWidth: 750 }}
@@ -343,7 +375,7 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 						<TableBody>
 							{visibleRows.map((row, index) => {
 								const isItemSelected = selected.includes(row.id);
-								const isEditing = row.id === editRowId;
+								const isEditing = editRowIds.includes(row.id);
 
 								return isEditing ? (
 									<Formik
@@ -352,10 +384,18 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 										validationSchema={inlineValidationSchema}
 										onSubmit={(values) => {
 											const updatedUsers = users.map((user) =>
-												user.id === editRowId ? { ...user, ...values } : user
+												user.id === row.id ? { ...user, ...values } : user
 											);
 											setUsers(updatedUsers);
-											setTimeout(() => setEditRowId(null), 0);
+
+											setEditRowIds((prev) =>
+												prev.filter((id) => id !== row.id)
+											);
+											setEditedRowsData((prev) => {
+												const updated = { ...prev };
+												delete updated[row.id];
+												return updated;
+											});
 										}}
 										enableReinitialize
 									>
@@ -458,7 +498,7 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 														</label>
 													</Box>
 												</TableCell>
-
+												{/* <TableCell></TableCell> */}
 												<TableCell>
 													<TextField
 														name="fname"
@@ -466,7 +506,17 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 														variant="standard"
 														fullWidth
 														value={values.fname}
-														onChange={handleChange}
+														onChange={(e) => {
+															handleChange(e);
+															const { name, value } = e.target;
+															setEditedRowsData((prev) => ({
+																...prev,
+																[row.id]: {
+																	...prev[row.id],
+																	[name]: value,
+																},
+															}));
+														}}
 														error={!!errors.fname && touched.fname}
 														helperText={touched.fname && errors.fname}
 													/>
@@ -478,7 +528,17 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 														variant="standard"
 														fullWidth
 														value={values.lname}
-														onChange={handleChange}
+														onChange={(e) => {
+															handleChange(e);
+															const { name, value } = e.target;
+															setEditedRowsData((prev) => ({
+																...prev,
+																[row.id]: {
+																	...prev[row.id],
+																	[name]: value,
+																},
+															}));
+														}}
 														error={!!errors.lname && touched.lname}
 														helperText={touched.lname && errors.lname}
 													/>
@@ -490,7 +550,17 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 														variant="standard"
 														fullWidth
 														value={values.email}
-														onChange={handleChange}
+														onChange={(e) => {
+															handleChange(e);
+															const { name, value } = e.target;
+															setEditedRowsData((prev) => ({
+																...prev,
+																[row.id]: {
+																	...prev[row.id],
+																	[name]: value,
+																},
+															}));
+														}}
 														error={!!errors.email && touched.email}
 														helperText={touched.email && errors.email}
 													/>
@@ -608,8 +678,11 @@ export default function SortedTable({ setId, users, setUsers, handleDelete }) {
 												variant="contained"
 												color="primary"
 												onClick={() => {
-													setEditRowId(row.id);
-													setEditFormData({ ...row });
+													setEditRowIds((prev) => [...prev, row.id]);
+													setEditedRowsData((prev) => ({
+														...prev,
+														[row.id]: { ...row },
+													}));
 												}}
 												sx={{ width: "48%", height: "70%" }}
 											>
